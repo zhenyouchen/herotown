@@ -38,20 +38,6 @@ class MainScene extends Phaser.Scene {
         
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        const decorations = ['Bushes', 'Rocks', 'Clouds'];
-        decorations.forEach(deco => {
-            for (let i = 1; i <= 4; i++) {
-                try {
-                    this.load.image(`deco-${deco.toLowerCase()}-${i}`, `terrain/${deco}/${deco.substring(0, deco.length-1)}${i}.png`);
-                } catch(e) {}
-            }
-        });
-        
-        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
-        unitTypes.forEach(unit => {
-            this.load.image(`unit-${unit.toLowerCase()}`, `units/${unit}/${unit}_Idle.png`);
-        });
-        
         console.log('✅ 素材加载完成！');
     }
     
