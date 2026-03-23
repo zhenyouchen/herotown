@@ -32,13 +32,21 @@ class MainScene extends Phaser.Scene {
         
         this.load.setPath('assets/');
         
+        // 加载建筑素材
         Object.values(PIXEL_BUILDINGS).forEach(building => {
             this.load.image(`building-${building.file}`, `buildings/${building.file}`);
         });
         
+        // 加载地形素材
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        console.log('✅ 素材加载完成！');
+        // 加载单位素材（Tiny Swords）
+        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
+        unitTypes.forEach(unit => {
+            this.load.image(`unit-${unit.toLowerCase()}`, `units/${unit}/${unit}_Idle.png`);
+        });
+        
+        console.log('✅ 素材加载配置完成！');
     }
     
     create() {
@@ -53,8 +61,17 @@ class MainScene extends Phaser.Scene {
         
         this.createPixelWorld();
         
-        // 创建NPC
-        this.npcManager = new NPCManager(this);
+        // 创建NPC（传递建筑位置用于碰撞检测）
+        const buildingPositions = [
+            { x: 650, y: 700, radius: 70 },   // hospital
+            { x: 800, y: 700, radius: 70 },   // school
+            { x: 950, y: 700, radius: 70 },   // gym
+            { x: 650, y: 900, radius: 70 },   // fitness
+            { x: 800, y: 900, radius: 70 },   // weapon
+            { x: 950, y: 900, radius: 70 },   // armor
+            { x: 800, y: 800, radius: 40 }    // campfire center
+        ];
+        this.npcManager = new NPCManager(this, buildingPositions);
         
         const hint = this.add.text(width / 2, 20, '🏰 勇者小镇 - Tiny Swords 像素版 | 拖动移动 | 滚轮缩放 | 点击NPC对话', { 
             fontSize: '14px', 

@@ -1,88 +1,60 @@
-// NPC类 - 地图上的非玩家角色
+// NPC类 - 地图上的非玩家角色（使用Tiny Swords素材）
 class NPC {
-    constructor(id, name, type, x, y) {
+    constructor(id, name, unitType, x, y, buildings) {
         this.id = id;
         this.name = name;
-        this.type = type; // 职业类型
+        this.unitType = unitType; // Warrior, Archer, Lancer, Monk, Pawn
         this.x = x;
         this.y = y;
         this.targetX = x;
         this.targetY = y;
-        this.speed = 0.5 + Math.random() * 0.5; // 随机速度
+        this.speed = 0.8 + Math.random() * 0.4;
         this.idleTime = 0;
-        this.maxIdleTime = 100 + Math.random() * 200; // 随机停留时间
+        this.maxIdleTime = 60 + Math.random() * 120;
         this.direction = 'down';
         this.sprite = null;
         this.nameText = null;
+        this.buildings = buildings; // 建筑位置，用于碰撞检测
+        this.radius = 20; // NPC碰撞半径
         
-        // NPC对话
-        this.dialogues = this.getDialoguesByType(type);
+        // 根据unitType设置对话
+        this.dialogues = this.getDialoguesByUnitType(unitType);
     }
     
-    getDialoguesByType(type) {
+    getDialoguesByUnitType(unitType) {
         const dialogueMap = {
-            merchant: [
-                "欢迎光临！来看看有什么需要的吧。",
-                "今天的货物都是新鲜的！",
-                "冒险者，你需要补给吗？",
-                "便宜卖啦！走过路过不要错过！"
+            Warrior: [
+                "战斗是我的生命！",
+                "需要保镖吗？我很便宜。",
+                "我的剑已经饥渴难耐了！",
+                "勇者大人，请让我跟随您！"
             ],
-            villager: [
-                "今天的天气真不错。",
-                "听说森林深处有宝藏...",
-                "勇者大人们都很忙呢。",
-                "小镇最近很和平。"
+            Archer: [
+                "百步穿杨，例无虚发。",
+                "需要远程支援吗？",
+                "我的眼睛比鹰还锐利。",
+                "箭在弦上，随时准备。"
             ],
-            guard: [
-                "站住！请出示身份证明。",
-                "这里是安全区，请放心。",
-                "有我在，没人能捣乱！",
-                "保持警惕，冒险者。"
+            Lancer: [
+                "长枪如龙，所向披靡！",
+                "一寸长，一寸强。",
+                "我的枪法可是祖传的。",
+                "冲锋陷阵，舍我其谁！"
             ],
-            farmer: [
-                "庄稼长得真好。",
-                "今年的收成应该不错。",
-                "要买点新鲜蔬菜吗？",
-                "种地可比冒险轻松多了。"
+            Monk: [
+                "愿神明保佑你。",
+                "需要治疗吗？我精通医术。",
+                "和平胜过战争。",
+                "让我为你祈祷..."
             ],
-            blacksmith: [
-                "需要打造武器吗？",
-                "我的铁匠铺随时为你服务。",
-                "好武器是冒险者的生命！",
-                "刚出炉的装备，来看看？"
-            ],
-            healer: [
-                "受伤了吗？让我看看。",
-                "健康是最重要的财富。",
-                "需要治疗药水吗？",
-                "愿神明保佑你。"
-            ],
-            child: [
-                "长大后我也要当勇者！",
-                "你看！有蝴蝶！",
-                "妈妈说不可以跑太远。",
-                "冒险者哥哥/姐姐好酷！"
-            ],
-            elder: [
-                "年轻人，听我讲个故事...",
-                "我年轻时也是个冒险者。",
-                "这个世界有很多秘密。",
-                "要尊重前辈的经验啊。"
-            ],
-            bard: [
-                "想听首歌吗？",
-                "音乐是最好的良药。",
-                "让我为你演奏一曲！",
-                "勇者的故事总是让人热血沸腾！"
-            ],
-            hunter: [
-                "森林里的猎物很多。",
-                "需要毛皮吗？",
-                "小心野兽，它们很危险。",
-                "狩猎是门技术活。"
+            Pawn: [
+                "我只是个普通人...",
+                "小镇的生活很平静。",
+                "听说外面的世界很危险。",
+                "愿勇者大人们平安归来。"
             ]
         };
-        return dialogueMap[type] || dialogueMap.villager;
+        return dialogueMap[unitType] || dialogueMap.Pawn;
     }
     
     getRandomDialogue() {
@@ -95,81 +67,97 @@ class NPC {
             return;
         }
         
-        // 计算到目标的距离
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 2) {
-            // 到达目标，开始 idle
+        if (distance < 3) {
             this.pickNewTarget();
             this.idleTime = this.maxIdleTime;
         } else {
-            // 向目标移动
+            // 计算移动
             const moveX = (dx / distance) * this.speed;
             const moveY = (dy / distance) * this.speed;
-            this.x += moveX;
-            this.y += moveY;
             
-            // 更新方向
-            if (Math.abs(moveX) > Math.abs(moveY)) {
-                this.direction = moveX > 0 ? 'right' : 'left';
+            // 预测新位置
+            const newX = this.x + moveX;
+            const newY = this.y + moveY;
+            
+            // 检查是否与建筑碰撞
+            if (!this.checkBuildingCollision(newX, newY)) {
+                this.x = newX;
+                this.y = newY;
+                
+                // 更新方向
+                if (Math.abs(moveX) > Math.abs(moveY)) {
+                    this.direction = moveX > 0 ? 'right' : 'left';
+                } else {
+                    this.direction = moveY > 0 ? 'down' : 'up';
+                }
+                
+                // 更新精灵位置
+                if (this.sprite) {
+                    this.sprite.x = this.x;
+                    this.sprite.y = this.y;
+                }
+                if (this.nameText) {
+                    this.nameText.x = this.x;
+                    this.nameText.y = this.y - 25;
+                }
             } else {
-                this.direction = moveY > 0 ? 'down' : 'up';
-            }
-            
-            // 更新精灵位置
-            if (this.sprite) {
-                this.sprite.x = this.x;
-                this.sprite.y = this.y;
-            }
-            if (this.nameText) {
-                this.nameText.x = this.x;
-                this.nameText.y = this.y - 20;
+                // 碰撞了，重新选择目标
+                this.pickNewTarget();
             }
         }
     }
     
+    checkBuildingCollision(x, y) {
+        // 检查与每个建筑的碰撞
+        for (let building of this.buildings) {
+            const dx = x - building.x;
+            const dy = y - building.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            // 建筑半径 + NPC半径
+            if (distance < (building.radius + this.radius)) {
+                return true; // 碰撞
+            }
+        }
+        return false; // 没有碰撞
+    }
+    
     pickNewTarget() {
-        // 在中心区域附近随机选择新目标
         const centerX = 800;
         const centerY = 800;
-        const range = 300;
+        const range = 250;
         
-        this.targetX = centerX + (Math.random() - 0.5) * range * 2;
-        this.targetY = centerY + (Math.random() - 0.5) * range * 2;
+        let attempts = 0;
+        let newX, newY;
         
-        // 确保在地图范围内
-        this.targetX = Math.max(100, Math.min(1500, this.targetX));
-        this.targetY = Math.max(100, Math.min(1500, this.targetY));
+        // 尝试找到不碰撞的位置
+        do {
+            newX = centerX + (Math.random() - 0.5) * range * 2;
+            newY = centerY + (Math.random() - 0.5) * range * 2;
+            attempts++;
+        } while (this.checkBuildingCollision(newX, newY) && attempts < 10);
+        
+        this.targetX = Math.max(150, Math.min(1450, newX));
+        this.targetY = Math.max(150, Math.min(1450, newY));
     }
     
     createSprite(scene) {
-        // 根据类型选择emoji
-        const emojiMap = {
-            merchant: '👨‍💼',
-            villager: '👨‍🌾',
-            guard: '💂',
-            farmer: '👩‍🌾',
-            blacksmith: '👨‍🏭',
-            healer: '👩‍⚕️',
-            child: '🧒',
-            elder: '👴',
-            bard: '🎸',
-            hunter: '🏹'
-        };
+        // 使用Tiny Swords素材
+        const textureKey = `unit-${this.unitType.toLowerCase()}`;
         
-        const emoji = emojiMap[this.type] || '👤';
+        // 创建精灵
+        this.sprite = scene.add.image(this.x, this.y, textureKey);
+        this.sprite.setScale(0.6); // 缩小一点
         
-        this.sprite = scene.add.text(this.x, this.y, emoji, {
-            fontSize: '28px'
-        }).setOrigin(0.5);
-        
-        this.nameText = scene.add.text(this.x, this.y - 20, this.name, {
+        this.nameText = scene.add.text(this.x, this.y - 25, this.name, {
             fontSize: '10px',
             fill: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 2,
+            strokeThickness: 3,
             fontFamily: 'Courier New, monospace'
         }).setOrigin(0.5);
     }
@@ -177,50 +165,77 @@ class NPC {
 
 // NPC管理器
 class NPCManager {
-    constructor(scene) {
+    constructor(scene, buildings) {
         this.scene = scene;
         this.npcs = [];
+        // 建筑碰撞数据
+        this.buildingColliders = buildings || [
+            { x: 650, y: 700, radius: 60 },   // hospital
+            { x: 800, y: 700, radius: 60 },   // school
+            { x: 950, y: 700, radius: 60 },   // gym
+            { x: 650, y: 900, radius: 60 },   // fitness
+            { x: 800, y: 900, radius: 60 },   // weapon
+            { x: 950, y: 900, radius: 60 },   // armor
+            { x: 800, y: 800, radius: 50 }    // campfire center
+        ];
         this.createNPCs();
     }
     
     createNPCs() {
         const npcData = [
-            { name: '老张', type: 'merchant' },
-            { name: '李四', type: 'villager' },
-            { name: '王守卫', type: 'guard' },
-            { name: '赵大妈', type: 'farmer' },
-            { name: '铁匠刘', type: 'blacksmith' },
-            { name: '医女小芳', type: 'healer' },
-            { name: '小明', type: 'child' },
-            { name: '李大爷', type: 'elder' },
-            { name: '吟游诗人', type: 'bard' },
-            { name: '猎手阿强', type: 'hunter' }
+            { name: '战士阿龙', unitType: 'Warrior' },
+            { name: '射手小美', unitType: 'Archer' },
+            { name: '枪兵大壮', unitType: 'Lancer' },
+            { name: '僧侣静空', unitType: 'Monk' },
+            { name: '村民小明', unitType: 'Pawn' },
+            { name: '战士铁柱', unitType: 'Warrior' },
+            { name: '射手小芳', unitType: 'Archer' },
+            { name: '枪兵二狗', unitType: 'Lancer' },
+            { name: '僧侣慧心', unitType: 'Monk' },
+            { name: '村民大壮', unitType: 'Pawn' }
         ];
         
         npcData.forEach((data, index) => {
-            // 在中心区域随机位置生成
-            const x = 600 + Math.random() * 400;
-            const y = 600 + Math.random() * 400;
+            // 在中心区域随机位置生成，确保不在建筑内
+            let x, y;
+            let attempts = 0;
+            do {
+                x = 550 + Math.random() * 500;
+                y = 550 + Math.random() * 500;
+                attempts++;
+            } while (this.checkInitialPosition(x, y) && attempts < 20);
             
-            const npc = new NPC(index, data.name, data.type, x, y);
+            const npc = new NPC(index, data.name, data.unitType, x, y, this.buildingColliders);
             npc.createSprite(this.scene);
             this.npcs.push(npc);
         });
         
-        console.log(`✅ 创建了 ${this.npcs.length} 个NPC`);
+        console.log(`✅ 创建了 ${this.npcs.length} 个NPC（使用Tiny Swords素材）`);
+    }
+    
+    checkInitialPosition(x, y) {
+        // 检查初始位置是否在建筑内
+        for (let building of this.buildingColliders) {
+            const dx = x - building.x;
+            const dy = y - building.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            if (distance < building.radius + 30) {
+                return true; // 在建筑内
+            }
+        }
+        return false;
     }
     
     update() {
         this.npcs.forEach(npc => npc.update());
     }
     
-    // 获取点击的NPC
     getNPCAt(x, y) {
         for (let npc of this.npcs) {
             const dx = npc.x - x;
             const dy = npc.y - y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 30) {
+            if (distance < 25) {
                 return npc;
             }
         }
