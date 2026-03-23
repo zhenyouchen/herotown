@@ -1,8 +1,5 @@
 // 游戏入口文件
 
-// 先声明这些类，让后面能用（因为 script 标签加载是顺序的）
-let Hero, Building, HeroHospital, HeroSchool, HeroGym, HeroFitness, WeaponShop, ArmorShop, SKILLS, GameManager, UIManager;
-
 // 等所有脚本加载完后初始化
 window.onload = function() {
     console.log('🎮 所有脚本加载完成，开始初始化...');

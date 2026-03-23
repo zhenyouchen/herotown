@@ -163,14 +163,3 @@ const SKILLS = {
         { id: 'final_stand', name: '最后一战', type: 'support', description: '濒死时爆发', power: 45 }
     ]
 };
-
-module.exports = { 
-    Building, 
-    HeroHospital, 
-    HeroSchool, 
-    HeroGym, 
-    HeroFitness, 
-    WeaponShop, 
-    ArmorShop,
-    SKILLS
-};
