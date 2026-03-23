@@ -53,7 +53,10 @@ class MainScene extends Phaser.Scene {
         
         this.createPixelWorld();
         
-        const hint = this.add.text(width / 2, 20, '🏰 勇者小镇 - Tiny Swords 像素版 | 拖动移动 | 滚轮缩放', { 
+        // 创建NPC
+        this.npcManager = new NPCManager(this);
+        
+        const hint = this.add.text(width / 2, 20, '🏰 勇者小镇 - Tiny Swords 像素版 | 拖动移动 | 滚轮缩放 | 点击NPC对话', { 
             fontSize: '14px', 
             fill: '#ffffff',
             stroke: '#2c3e50',
@@ -68,6 +71,16 @@ class MainScene extends Phaser.Scene {
             strokeThickness: 3,
             fontFamily: 'Courier New, monospace'
         }).setScrollFactor(0);
+        
+        // NPC对话显示
+        this.npcDialogue = this.add.text(width / 2, height - 100, '', {
+            fontSize: '14px',
+            fill: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 4,
+            fontFamily: 'Courier New, monospace',
+            align: 'center'
+        }).setOrigin(0.5).setScrollFactor(0).setVisible(false);
         
         this.setupControls();
         
@@ -97,6 +110,15 @@ class MainScene extends Phaser.Scene {
             const worldX = pointer.worldX;
             const worldY = pointer.worldY;
             
+            // 检查是否点击了NPC
+            if (this.npcManager) {
+                const clickedNPC = this.npcManager.getNPCAt(worldX, worldY);
+                if (clickedNPC) {
+                    this.showNPCDialogue(clickedNPC);
+                    return;
+                }
+            }
+            
             if (worldX >= 0 && worldX < this.mapWidth && worldY >= 0 && worldY < this.mapHeight) {
                 const gridX = Math.floor(worldX / this.gridSize);
                 const gridY = Math.floor(worldY / this.gridSize);
@@ -106,6 +128,27 @@ class MainScene extends Phaser.Scene {
                 }
             }
         });
+    }
+    
+    showNPCDialogue(npc) {
+        const dialogue = npc.getRandomDialogue();
+        this.npcDialogue.setText(`${npc.name}: "${dialogue}"`);
+        this.npcDialogue.setVisible(true);
+        
+        // 3秒后隐藏对话
+        if (this.dialogueTimer) {
+            clearTimeout(this.dialogueTimer);
+        }
+        this.dialogueTimer = setTimeout(() => {
+            this.npcDialogue.setVisible(false);
+        }, 3000);
+    }
+    
+    update() {
+        // 更新NPC
+        if (this.npcManager) {
+            this.npcManager.update();
+        }
     }
     
     generateLandMap() {
