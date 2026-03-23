@@ -29,8 +29,8 @@ class GameManager {
         } else {
             this.heroes = [];
             this.nextHeroId = 1;
-            // 初始给一个勇者
-            this.birthHero();
+            // 初始给一个勇者（禁止 emit 事件，因为 UI 还没准备好）
+            this.birthHero(true);
         }
         
         // 待处理的事件（技能选择等）
@@ -119,13 +119,19 @@ class GameManager {
     
     // 触发事件
     emit(event, value) {
-        if (this.listeners[event]) {
-            this.listeners[event].forEach(cb => cb(value));
+        if (this.listeners && this.listeners[event]) {
+            this.listeners[event].forEach(cb => {
+                try {
+                    cb(value);
+                } catch (e) {
+                    console.warn(`事件监听器错误 (${event}):`, e);
+                }
+            });
         }
     }
     
     // 勇者出生
-    birthHero() {
+    birthHero(suppressEvent = false) {
         const hero = new Hero(this.nextHeroId++);
         // 医院等级加成
         const hospitalEffect = this.buildings.hospital.getEffect();
@@ -134,7 +140,9 @@ class GameManager {
         });
         hero.addHistory('在勇者医院出生了！');
         this.heroes.push(hero);
-        this.emit('heroes', this.heroes);
+        if (!suppressEvent) {
+            this.emit('heroes', this.heroes);
+        }
         this.saveGame();
         return hero;
     }
