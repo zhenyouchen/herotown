@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地测试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a2e; color: white; }
+        .test { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: #4CAF50; }
+        .fail { background: #f44336; }
+        .info { background: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>🧪 本地文件测试</h1>
+    
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function addResult(test, status, message) {
+            const div = document.createElement('div');
+            div.className = `test ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        addResult('页面加载', 'pass', 'HTML 页面加载成功！');
+        
+        // 测试 1: 检查文件是否可以访问
+        fetch('js/Hero.js')
+            .then(r => {
+                addResult('Hero.js', r.ok ? 'pass' : 'fail', r.ok ? '可以访问' : '无法访问');
+                return r.text();
+            })
+            .then(text => {
+                const hasModuleExports = text.includes('module.exports');
+                addResult('module.exports', hasModuleExports ? 'fail' : 'pass', 
+                    hasModuleExports ? '发现 module.exports！' : '没有 module.exports ✓');
+            });
+        
+        fetch('js/Buildings.js')
+            .then(r => {
+                addResult('Buildings.js', r.ok ? 'pass' : 'fail', r.ok ? '可以访问' : '无法访问');
+                return r.text();
+            })
+            .then(text => {
+                const hasModuleExports = text.includes('module.exports');
+                addResult('Buildings module.exports', hasModuleExports ? 'fail' : 'pass', 
+                    hasModuleExports ? '发现 module.exports！' : '没有 module.exports ✓');
+            });
+        
+        fetch('js/game.js')
+            .then(r => {
+                addResult('game.js', r.ok ? 'pass' : 'fail', r.ok ? '可以访问' : '无法访问');
+            });
+    </script>
+</body>
+</html>

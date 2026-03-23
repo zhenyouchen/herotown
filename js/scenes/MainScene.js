@@ -1,71 +1,62 @@
-// 土地类型定义 - 像素艺术风格
+// 像素艺术风格 - 使用 Tiny Swords 素材
 const LAND_TYPES = {
-    grass: {
-        name: '草地',
-        color: 0x4a7c23,
-        colorAlt: 0x5a8c33,
-        emoji: '🌿',
-        description: '绿油油的草地'
-    },
-    dirt: {
-        name: '泥土',
-        color: 0x8b6914,
-        colorAlt: 0x9b7924,
-        emoji: '🟤',
-        description: '肥沃的泥土'
-    },
-    water: {
-        name: '池塘',
-        color: 0x2980b9,
-        colorAlt: 0x3498db,
-        emoji: '💧',
-        description: '清澈的池塘'
-    },
-    forest: {
-        name: '森林',
-        color: 0x1e4620,
-        colorAlt: 0x2e5630,
-        emoji: '🌲',
-        description: '茂密的像素森林'
-    },
-    stone: {
-        name: '岩石',
-        color: 0x5d5d5d,
-        colorAlt: 0x7d7d7d,
-        emoji: '🪨',
-        description: '坚硬的岩石'
-    },
-    sand: {
-        name: '沙地',
-        color: 0xf4d03f,
-        colorAlt: 0xf5d65f,
-        emoji: '🏜️',
-        description: '金色的沙地'
-    }
+    grass: { name: '草地', color: 0x4a7c23, tile: 0 },
+    dirt: { name: '泥土', color: 0x8b6914, tile: 1 },
+    water: { name: '池塘', color: 0x2980b9, tile: 2 },
+    forest: { name: '森林', color: 0x1e4620, tile: 3 },
+    stone: { name: '岩石', color: 0x5d5d5d, tile: 4 },
+    sand: { name: '沙地', color: 0xf4d03f, tile: 5 }
 };
 
-// 像素艺术风格的建筑配置
 const PIXEL_BUILDINGS = {
-    hospital: { name: '勇者医院', color: 0xe74c3c, emoji: '🏥' },
-    school: { name: '勇者学堂', color: 0x3498db, emoji: '📚' },
-    gym: { name: '勇者武馆', color: 0xf39c12, emoji: '⚔️' },
-    fitness: { name: '健身房', color: 0x2ecc71, emoji: '💪' },
-    weapon: { name: '武器店', color: 0x9b59b6, emoji: '🗡️' },
-    armor: { name: '防具店', color: 0x1abc9c, emoji: '🛡️' }
+    hospital: { name: '勇者医院', file: 'Castle.png', color: 0xe74c3c },
+    school: { name: '勇者学堂', file: 'Monastery.png', color: 0x3498db },
+    gym: { name: '勇者武馆', file: 'Barracks.png', color: 0xf39c12 },
+    fitness: { name: '健身房', file: 'Archery.png', color: 0x2ecc71 },
+    weapon: { name: '武器店', file: 'House1.png', color: 0x9b59b6 },
+    armor: { name: '防具店', file: 'House2.png', color: 0x1abc9c }
 };
 
-// 主游戏场景
 class MainScene extends Phaser.Scene {
     constructor() {
         super('MainScene');
         this.landMap = [];
-        this.gridSize = 48; // 像素风格用稍小的格子
-        this.mapWidth = 1200;
-        this.mapHeight = 1200;
+        this.gridSize = 64;
+        this.mapWidth = 1600;
+        this.mapHeight = 1600;
+        this.buildingSprites = {};
+    }
+    
+    preload() {
+        console.log('📦 开始加载素材...');
+        
+        this.load.setPath('assets/');
+        
+        Object.values(PIXEL_BUILDINGS).forEach(building => {
+            this.load.image(`building-${building.file}`, `buildings/${building.file}`);
+        });
+        
+        this.load.image('tilemap', 'terrain/Tilemap_color1.png');
+        
+        const decorations = ['Bushes', 'Rocks', 'Clouds'];
+        decorations.forEach(deco => {
+            for (let i = 1; i <= 4; i++) {
+                try {
+                    this.load.image(`deco-${deco.toLowerCase()}-${i}`, `terrain/${deco}/${deco.substring(0, deco.length-1)}${i}.png`);
+                } catch(e) {}
+            }
+        });
+        
+        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
+        unitTypes.forEach(unit => {
+            this.load.image(`unit-${unit.toLowerCase()}`, `units/${unit}/${unit}_Idle.png`);
+        });
+        
+        console.log('✅ 素材加载完成！');
     }
     
     create() {
-        console.log('🎨 MainScene.create() - 像素艺术风格');
+        console.log('🎨 MainScene.create() - 像素艺术版');
         
         const width = this.scale.width;
         const height = this.scale.height;
@@ -76,7 +67,7 @@ class MainScene extends Phaser.Scene {
         
         this.createPixelWorld();
         
-        const hint = this.add.text(width / 2, 20, '🏰 勇者小镇 - 像素艺术版 | 拖动移动 | 滚轮缩放', { 
+        const hint = this.add.text(width / 2, 20, '🏰 勇者小镇 - Tiny Swords 像素版 | 拖动移动 | 滚轮缩放', { 
             fontSize: '14px', 
             fill: '#ffffff',
             stroke: '#2c3e50',
@@ -134,7 +125,6 @@ class MainScene extends Phaser.Scene {
     generateLandMap() {
         const cols = Math.floor(this.mapWidth / this.gridSize);
         const rows = Math.floor(this.mapHeight / this.gridSize);
-        
         const landTypes = Object.keys(LAND_TYPES);
         
         for (let y = 0; y < rows; y++) {
@@ -155,8 +145,6 @@ class MainScene extends Phaser.Scene {
                     );
                     if (distFromCenter < 5) {
                         this.landMap[y][x] = 'grass';
-                    } else if (distFromCenter < 6) {
-                        this.landMap[y][x] = 'dirt';
                     }
                 }
             }
@@ -174,27 +162,25 @@ class MainScene extends Phaser.Scene {
         const distRatio = distFromCenter / maxDist;
         
         if (distRatio < 0.4) {
-            if (random < 0.6) return 'grass';
-            if (random < 0.8) return 'dirt';
-            if (random < 0.9) return 'stone';
-            return 'forest';
+            if (random < 0.7) return 'grass';
+            if (random < 0.85) return 'dirt';
+            return 'stone';
         } else if (distRatio < 0.7) {
             if (random < 0.4) return 'forest';
-            if (random < 0.6) return 'grass';
-            if (random < 0.75) return 'dirt';
-            if (random < 0.9) return 'stone';
-            return 'water';
+            if (random < 0.65) return 'grass';
+            if (random < 0.8) return 'dirt';
+            return 'stone';
         } else {
-            if (random < 0.35) return 'forest';
-            if (random < 0.5) return 'water';
-            if (random < 0.7) return 'stone';
-            if (random < 0.85) return 'grass';
+            if (random < 0.35) return 'water';
+            if (random < 0.55) return 'forest';
+            if (random < 0.75) return 'stone';
+            if (random < 0.9) return 'grass';
             return 'sand';
         }
     }
     
     createPixelWorld() {
-        this.add.rectangle(this.mapWidth/2, this.mapHeight/2, this.mapWidth, this.mapHeight, 0x34495e);
+        this.add.rectangle(this.mapWidth/2, this.mapHeight/2, this.mapWidth, this.mapHeight, 0x87ceeb);
         
         this.generateLandMap();
         
@@ -205,27 +191,10 @@ class MainScene extends Phaser.Scene {
             for (let x = 0; x < cols; x++) {
                 const landType = this.landMap[y][x];
                 const landInfo = LAND_TYPES[landType];
-                
                 const gridX = x * this.gridSize + this.gridSize / 2;
                 const gridY = y * this.gridSize + this.gridSize / 2;
                 
-                const seed = x * 100 + y;
-                const colorRandom = ((seed * 1103515245 + 12345) % 2147483648) / 2147483648;
-                const useAltColor = colorRandom > 0.5;
-                
-                this.add.rectangle(gridX, gridY, this.gridSize - 1, this.gridSize - 1, 
-                    useAltColor ? landInfo.colorAlt : landInfo.color);
-                
-                if (x % 3 === 1 && y % 3 === 1) {
-                    this.add.text(gridX, gridY, landInfo.emoji, {
-                        fontSize: '16px'
-                    }).setOrigin(0.5);
-                }
-                
-                if (x % 4 === 0 && y % 4 === 0) {
-                    this.add.rectangle(gridX - 8, gridY - 8, 4, 4, 0x000000, 0.1);
-                    this.add.rectangle(gridX + 8, gridY + 8, 4, 4, 0xffffff, 0.1);
-                }
+                this.add.rectangle(gridX, gridY, this.gridSize - 1, this.gridSize - 1, landInfo.color);
             }
         }
         
@@ -234,20 +203,20 @@ class MainScene extends Phaser.Scene {
     }
     
     addPixelDecorations(cols, rows) {
-        const decorations = ['🌳', '🌲', '🪨', '🌸', '🍀', '🌻', '🪵', '⛏️'];
-        
-        for (let i = 0; i < 40; i++) {
+        const decoTypes = ['tree', 'rock', 'bush'];
+        for (let i = 0; i < 60; i++) {
             const x = Math.random() * this.mapWidth;
             const y = Math.random() * this.mapHeight;
-            const deco = decorations[Math.floor(Math.random() * decorations.length)];
+            const decoType = decoTypes[Math.floor(Math.random() * decoTypes.length)];
             
             const distFromCenter = Math.sqrt(
                 Math.pow(x - this.mapWidth/2, 2) + Math.pow(y - this.mapHeight/2, 2)
             );
             
-            if (distFromCenter > 150) {
-                this.add.text(x, y, deco, {
-                    fontSize: '20px'
+            if (distFromCenter > 200) {
+                const emojis = { tree: '🌲', rock: '🪨', bush: '🌿' };
+                this.add.text(x, y, emojis[decoType], {
+                    fontSize: '24px'
                 }).setOrigin(0.5);
             }
         }
@@ -258,12 +227,12 @@ class MainScene extends Phaser.Scene {
         const centerY = this.mapHeight / 2;
         
         const buildingPositions = [
-            { key: 'hospital', x: -120, y: -80 },
-            { key: 'school', x: 0, y: -80 },
-            { key: 'gym', x: 120, y: -80 },
-            { key: 'fitness', x: -120, y: 80 },
-            { key: 'weapon', x: 0, y: 80 },
-            { key: 'armor', x: 120, y: 80 }
+            { key: 'hospital', x: -150, y: -100 },
+            { key: 'school', x: 0, y: -100 },
+            { key: 'gym', x: 150, y: -100 },
+            { key: 'fitness', x: -150, y: 100 },
+            { key: 'weapon', x: 0, y: 100 },
+            { key: 'armor', x: 150, y: 100 }
         ];
         
         buildingPositions.forEach(pos => {
@@ -277,44 +246,38 @@ class MainScene extends Phaser.Scene {
         const campfireX = centerX;
         const campfireY = centerY;
         
-        this.add.text(campfireX, campfireY - 5, '🔥', { fontSize: '32px' }).setOrigin(0.5);
+        this.add.text(campfireX, campfireY - 5, '🔥', { fontSize: '36px' }).setOrigin(0.5);
         
         for (let i = 0; i < 8; i++) {
             const angle = (i / 8) * Math.PI * 2;
-            const stoneX = campfireX + Math.cos(angle) * 35;
-            const stoneY = campfireY + Math.sin(angle) * 35;
-            this.add.text(stoneX, stoneY, '🪨', { fontSize: '16px' }).setOrigin(0.5);
+            const stoneX = campfireX + Math.cos(angle) * 40;
+            const stoneY = campfireY + Math.sin(angle) * 40;
+            this.add.text(stoneX, stoneY, '🪨', { fontSize: '18px' }).setOrigin(0.5);
         }
     }
     
     placePixelBuilding(x, y, key) {
         const building = PIXEL_BUILDINGS[key];
-        const size = this.gridSize * 1.8;
         
-        this.add.rectangle(x, y, size, size, building.color)
-            .setStrokeStyle(3, 0x2c3e50);
+        const baseSize = 96;
+        this.add.rectangle(x, y, baseSize, baseSize, building.color)
+            .setStrokeStyle(4, 0x2c3e50);
         
-        this.add.rectangle(x, y - size/4, size * 0.8, 4, 0xffffff, 0.3);
-        
-        this.add.text(x, y, building.emoji, {
-            fontSize: '28px'
-        }).setOrigin(0.5);
-        
-        this.add.text(x, y + size/2 + 12, building.name, {
-            fontSize: '10px',
+        this.add.text(x, y, building.name, {
+            fontSize: '11px',
             fill: '#ffffff',
             stroke: '#000000',
-            strokeThickness: 3,
+            strokeThickness: 4,
             fontFamily: 'Courier New, monospace'
-        }).setOrigin(0.5);
+        }).setOrigin(0.5, 2.5);
     }
     
     showLandInfo(gridX, gridY, landType) {
         const landInfo = LAND_TYPES[landType];
+        const emojis = { grass: '🌿', dirt: '🟤', water: '💧', forest: '🌲', stone: '🪨', sand: '🏜️' };
         this.landInfo.setText(
             `📍 位置: (${gridX}, ${gridY})\n` +
-            `${landInfo.emoji} 类型: ${landInfo.name}\n` +
-            `📝 ${landInfo.description}`
+            `${emojis[landType] || '❓'} 类型: ${landInfo.name}`
         );
     }
 }
