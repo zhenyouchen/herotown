@@ -41,9 +41,15 @@ class MainScene extends Phaser.Scene {
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
         // 加载单位素材（Tiny Swords）
-        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
+        const unitTypes = [
+            { name: 'Warrior', file: 'Warrior_Idle.png' },
+            { name: 'Archer', file: 'Archer_Idle.png' },
+            { name: 'Lancer', file: 'Lancer_Idle.png' },
+            { name: 'Monk', file: 'Idle.png' },  // Monk 文件夹里直接是 Idle.png
+            { name: 'Pawn', file: 'Pawn_Idle.png' }
+        ];
         unitTypes.forEach(unit => {
-            this.load.image(`unit-${unit.toLowerCase()}`, `units/${unit}/${unit}_Idle.png`);
+            this.load.image(`unit-${unit.name.toLowerCase()}`, `units/${unit.name}/${unit.file}`);
         });
         
         console.log('✅ 素材加载配置完成！');
@@ -51,6 +57,13 @@ class MainScene extends Phaser.Scene {
     
     create() {
         console.log('🎨 MainScene.create() - 像素艺术版');
+        
+        // 防止重复创建
+        if (this.created) {
+            console.log('⚠️ 场景已经创建过了，跳过');
+            return;
+        }
+        this.created = true;
         
         const width = this.scale.width;
         const height = this.scale.height;
