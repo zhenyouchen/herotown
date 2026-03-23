@@ -1,6 +1,16 @@
 // 游戏管理器 - 全局状态
 class GameManager {
     constructor() {
+        // 先初始化监听器（最重要！）
+        this.listeners = {
+            money: [],
+            day: [],
+            time: [],
+            heroes: [],
+            buildings: [],
+            events: []
+        };
+        
         // 先尝试读取存档
         const saved = this.loadGame();
         
@@ -35,15 +45,6 @@ class GameManager {
         
         // 待处理的事件（技能选择等）
         this.pendingEvents = saved ? saved.pendingEvents || [] : [];
-        
-        this.listeners = {
-            money: [],
-            day: [],
-            time: [],
-            heroes: [],
-            buildings: [],
-            events: []
-        };
         
         if (saved) {
             console.log('🎮 已读取存档！');
