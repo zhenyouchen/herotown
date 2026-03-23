@@ -245,17 +245,18 @@ class MainScene extends Phaser.Scene {
     placePixelBuilding(x, y, key) {
         const building = PIXEL_BUILDINGS[key];
         
-        const baseSize = 96;
-        this.add.rectangle(x, y, baseSize, baseSize, building.color)
-            .setStrokeStyle(4, 0x2c3e50);
+        // 使用加载的图片
+        const sprite = this.add.image(x, y, `building-${building.file}`);
+        sprite.setScale(0.8); // 缩放以适应
         
-        this.add.text(x, y, building.name, {
+        // 添加建筑名称
+        this.add.text(x, y + 50, building.name, {
             fontSize: '11px',
             fill: '#ffffff',
             stroke: '#000000',
             strokeThickness: 4,
             fontFamily: 'Courier New, monospace'
-        }).setOrigin(0.5, 2.5);
+        }).setOrigin(0.5);
     }
     
     showLandInfo(gridX, gridY, landType) {
