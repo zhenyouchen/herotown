@@ -148,19 +148,31 @@ class NPC {
     createSprite(scene) {
         console.log('🔨 创建NPC精灵:', this.name, '类型:', this.unitType);
         
-        // 先尝试用emoji显示，确保逻辑正确
-        const emojis = {
-            Warrior: '⚔️',
-            Archer: '🏹',
-            Lancer: '🗡️',
-            Monk: '🧘',
-            Pawn: '👤'
-        };
+        // 使用Tiny Swords精灵表的第一帧
+        const textureKey = `unit-${this.unitType.toLowerCase()}`;
         
-        // 使用emoji而不是图片素材，先验证逻辑
-        this.sprite = scene.add.text(this.x, this.y, emojis[this.unitType] || '👤', {
-            fontSize: '32px'
-        }).setOrigin(0.5);
+        // 检查精灵表是否存在
+        if (!scene.textures.exists(textureKey)) {
+            console.error('❌ 精灵表不存在:', textureKey);
+            // 使用备用emoji
+            const emojis = { Warrior: '⚔️', Archer: '🏹', Lancer: '🗡️', Monk: '🧘', Pawn: '👤' };
+            this.sprite = scene.add.text(this.x, this.y, emojis[this.unitType] || '👤', {
+                fontSize: '32px'
+            }).setOrigin(0.5);
+        } else {
+            try {
+                // 使用精灵表的第一帧创建精灵
+                console.log('  使用精灵表:', textureKey);
+                this.sprite = scene.add.sprite(this.x, this.y, textureKey, 0); // 帧0
+                this.sprite.setScale(0.8); // 稍微缩小一点
+            } catch (e) {
+                console.error('❌ 创建精灵失败:', e);
+                const emojis = { Warrior: '⚔️', Archer: '🏹', Lancer: '🗡️', Monk: '🧘', Pawn: '👤' };
+                this.sprite = scene.add.text(this.x, this.y, emojis[this.unitType] || '👤', {
+                    fontSize: '32px'
+                }).setOrigin(0.5);
+            }
+        }
         
         // 创建名字文本
         this.nameText = scene.add.text(this.x, this.y - 25, this.name, {
@@ -224,18 +236,18 @@ class NPCManager {
     createNPCs() {
         console.log('🔨 开始创建NPC...');
         
-        // 确保只创建10个NPC - 先用同一种类型测试
+        // 确保只创建10个NPC - 恢复原来的多样化类型
         const npcData = [
             { name: '战士阿龙', unitType: 'Warrior' },
+            { name: '射手小美', unitType: 'Archer' },
+            { name: '枪兵大壮', unitType: 'Lancer' },
+            { name: '僧侣静空', unitType: 'Monk' },
+            { name: '村民小明', unitType: 'Pawn' },
             { name: '战士铁柱', unitType: 'Warrior' },
-            { name: '战士小刚', unitType: 'Warrior' },
-            { name: '战士小强', unitType: 'Warrior' },
-            { name: '战士小丽', unitType: 'Warrior' },
-            { name: '战士小红', unitType: 'Warrior' },
-            { name: '战士小华', unitType: 'Warrior' },
-            { name: '战士小军', unitType: 'Warrior' },
-            { name: '战士小敏', unitType: 'Warrior' },
-            { name: '战士小芳', unitType: 'Warrior' }
+            { name: '射手小芳', unitType: 'Archer' },
+            { name: '枪兵二狗', unitType: 'Lancer' },
+            { name: '僧侣慧心', unitType: 'Monk' },
+            { name: '村民大壮', unitType: 'Pawn' }
         ];
         
         console.log('📋 NPC数据数量:', npcData.length);

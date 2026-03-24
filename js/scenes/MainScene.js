@@ -40,21 +40,20 @@ class MainScene extends Phaser.Scene {
         // 加载地形素材
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        // 加载单位素材（Tiny Swords）- 作为精灵表加载
+        // 加载单位素材（Tiny Swords）- 只作为精灵表加载
         const unitTypes = [
-            { name: 'Warrior', file: 'Warrior_Idle.png' },
-            { name: 'Archer', file: 'Archer_Idle.png' },
-            { name: 'Lancer', file: 'Lancer_Idle.png' },
-            { name: 'Monk', file: 'Idle.png' },  // Monk 文件夹里直接是 Idle.png
-            { name: 'Pawn', file: 'Pawn_Idle.png' }
+            { name: 'Warrior', file: 'Warrior_Idle.png', frameWidth: 64, frameHeight: 64 },
+            { name: 'Archer', file: 'Archer_Idle.png', frameWidth: 64, frameHeight: 64 },
+            { name: 'Lancer', file: 'Lancer_Idle.png', frameWidth: 64, frameHeight: 64 },
+            { name: 'Monk', file: 'Idle.png', frameWidth: 64, frameHeight: 64 },  // Monk 文件夹里直接是 Idle.png
+            { name: 'Pawn', file: 'Pawn_Idle.png', frameWidth: 64, frameHeight: 64 }
         ];
         unitTypes.forEach(unit => {
-            // 先尝试作为单个图片加载
-            this.load.image(`unit-${unit.name.toLowerCase()}`, `units/${unit.name}/${unit.file}`);
-            // 同时也作为精灵表加载（备用）
-            this.load.spritesheet(`unit-${unit.name.toLowerCase()}-sheet`, 
+            // 只作为精灵表加载，使用第一帧
+            this.load.spritesheet(
+                `unit-${unit.name.toLowerCase()}`, 
                 `units/${unit.name}/${unit.file}`, 
-                { frameWidth: 64, frameHeight: 64 }
+                { frameWidth: unit.frameWidth, frameHeight: unit.frameHeight }
             );
         });
         
