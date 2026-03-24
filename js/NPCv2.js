@@ -146,13 +146,23 @@ class NPC {
     }
     
     createSprite(scene) {
-        // 使用Tiny Swords素材
-        const textureKey = `unit-${this.unitType.toLowerCase()}`;
+        console.log('🔨 创建NPC精灵:', this.name, '类型:', this.unitType);
         
-        // 创建精灵
-        this.sprite = scene.add.image(this.x, this.y, textureKey);
-        this.sprite.setScale(0.6); // 缩小一点
+        // 先尝试用emoji显示，确保逻辑正确
+        const emojis = {
+            Warrior: '⚔️',
+            Archer: '🏹',
+            Lancer: '🗡️',
+            Monk: '🧘',
+            Pawn: '👤'
+        };
         
+        // 使用emoji而不是图片素材，先验证逻辑
+        this.sprite = scene.add.text(this.x, this.y, emojis[this.unitType] || '👤', {
+            fontSize: '32px'
+        }).setOrigin(0.5);
+        
+        // 创建名字文本
         this.nameText = scene.add.text(this.x, this.y - 25, this.name, {
             fontSize: '10px',
             fill: '#ffffff',
@@ -160,6 +170,8 @@ class NPC {
             strokeThickness: 3,
             fontFamily: 'Courier New, monospace'
         }).setOrigin(0.5);
+        
+        console.log('✅ NPC精灵创建完成:', this.name);
     }
 }
 
@@ -212,18 +224,18 @@ class NPCManager {
     createNPCs() {
         console.log('🔨 开始创建NPC...');
         
-        // 确保只创建10个NPC
+        // 确保只创建10个NPC - 先用同一种类型测试
         const npcData = [
             { name: '战士阿龙', unitType: 'Warrior' },
-            { name: '射手小美', unitType: 'Archer' },
-            { name: '枪兵大壮', unitType: 'Lancer' },
-            { name: '僧侣静空', unitType: 'Monk' },
-            { name: '村民小明', unitType: 'Pawn' },
             { name: '战士铁柱', unitType: 'Warrior' },
-            { name: '射手小芳', unitType: 'Archer' },
-            { name: '枪兵二狗', unitType: 'Lancer' },
-            { name: '僧侣慧心', unitType: 'Monk' },
-            { name: '村民大壮', unitType: 'Pawn' }
+            { name: '战士小刚', unitType: 'Warrior' },
+            { name: '战士小强', unitType: 'Warrior' },
+            { name: '战士小丽', unitType: 'Warrior' },
+            { name: '战士小红', unitType: 'Warrior' },
+            { name: '战士小华', unitType: 'Warrior' },
+            { name: '战士小军', unitType: 'Warrior' },
+            { name: '战士小敏', unitType: 'Warrior' },
+            { name: '战士小芳', unitType: 'Warrior' }
         ];
         
         console.log('📋 NPC数据数量:', npcData.length);

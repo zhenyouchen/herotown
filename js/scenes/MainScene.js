@@ -40,7 +40,7 @@ class MainScene extends Phaser.Scene {
         // 加载地形素材
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        // 加载单位素材（Tiny Swords）
+        // 加载单位素材（Tiny Swords）- 作为精灵表加载
         const unitTypes = [
             { name: 'Warrior', file: 'Warrior_Idle.png' },
             { name: 'Archer', file: 'Archer_Idle.png' },
@@ -49,7 +49,13 @@ class MainScene extends Phaser.Scene {
             { name: 'Pawn', file: 'Pawn_Idle.png' }
         ];
         unitTypes.forEach(unit => {
+            // 先尝试作为单个图片加载
             this.load.image(`unit-${unit.name.toLowerCase()}`, `units/${unit.name}/${unit.file}`);
+            // 同时也作为精灵表加载（备用）
+            this.load.spritesheet(`unit-${unit.name.toLowerCase()}-sheet`, 
+                `units/${unit.name}/${unit.file}`, 
+                { frameWidth: 64, frameHeight: 64 }
+            );
         });
         
         console.log('✅ 素材加载配置完成！');
