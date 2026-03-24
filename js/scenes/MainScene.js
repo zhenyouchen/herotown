@@ -40,24 +40,35 @@ class MainScene extends Phaser.Scene {
         // 加载地形素材
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        // 加载单位素材（Tiny Swords）- 只作为精灵表加载
+        // 只加载Warrior素材简化测试
         const unitTypes = [
-            { name: 'Warrior', file: 'Warrior_Idle.png', frameWidth: 64, frameHeight: 64 },
-            { name: 'Archer', file: 'Archer_Idle.png', frameWidth: 64, frameHeight: 64 },
-            { name: 'Lancer', file: 'Lancer_Idle.png', frameWidth: 64, frameHeight: 64 },
-            { name: 'Monk', file: 'Idle.png', frameWidth: 64, frameHeight: 64 },  // Monk 文件夹里直接是 Idle.png
-            { name: 'Pawn', file: 'Pawn_Idle.png', frameWidth: 64, frameHeight: 64 }
+            { name: 'Warrior', file: 'Warrior_Idle.png' }
         ];
         unitTypes.forEach(unit => {
-            // 只作为精灵表加载，使用第一帧
-            this.load.spritesheet(
+            // 作为单个图片加载
+            this.load.image(
                 `unit-${unit.name.toLowerCase()}`, 
-                `units/${unit.name}/${unit.file}`, 
-                { frameWidth: unit.frameWidth, frameHeight: unit.frameHeight }
+                `units/${unit.name}/${unit.file}`
             );
         });
         
         console.log('✅ 素材加载配置完成！');
+    }
+    
+    // 素材加载完成后的回调
+    loadComplete() {
+        console.log('📦 所有素材加载完成！');
+        console.log('🔍 检查纹理是否存在...');
+        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
+        unitTypes.forEach(name => {
+            const key = `unit-${name.toLowerCase()}`;
+            if (this.textures.exists(key)) {
+                const texture = this.textures.get(key);
+                console.log(`  ✅ ${key}: ${texture.source[0].width}x${texture.source[0].height}`);
+            } else {
+                console.log(`  ❌ ${key}: 不存在`);
+            }
+        });
     }
     
     create() {
@@ -122,6 +133,19 @@ class MainScene extends Phaser.Scene {
         this.setupControls();
         
         this.cameras.main.centerOn(this.mapWidth / 2, this.mapHeight / 2);
+        
+        // 检查纹理
+        console.log('🔍 create() 中检查纹理...');
+        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
+        unitTypes.forEach(name => {
+            const key = `unit-${name.toLowerCase()}`;
+            if (this.textures.exists(key)) {
+                const texture = this.textures.get(key);
+                console.log(`  ✅ ${key}: ${texture.source[0].width}x${texture.source[0].height}`);
+            } else {
+                console.log(`  ❌ ${key}: 不存在`);
+            }
+        });
         
         console.log('✅ MainScene.create() 完成 - 像素世界已创建！');
     }
