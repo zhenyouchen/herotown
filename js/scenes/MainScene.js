@@ -40,48 +40,29 @@ class MainScene extends Phaser.Scene {
         // 加载地形素材
         this.load.image('tilemap', 'terrain/Tilemap_color1.png');
         
-        // 只加载Warrior素材简化测试
-        const unitTypes = [
-            { name: 'Warrior', file: 'Warrior_Idle.png' }
-        ];
+        // 加载单位素材（Tiny Swords）- 恢复能工作的版本
+        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
         unitTypes.forEach(unit => {
-            // 作为单个图片加载
-            this.load.image(
-                `unit-${unit.name.toLowerCase()}`, 
-                `units/${unit.name}/${unit.file}`
-            );
+            // Monk文件夹里直接是Idle.png，其他是 {unit}_Idle.png
+            let fileName = `${unit}_Idle.png`;
+            if (unit === 'Monk') {
+                fileName = 'Idle.png';
+            }
+            this.load.image(`unit-${unit.toLowerCase()}`, `units/${unit}/${fileName}`);
         });
         
         console.log('✅ 素材加载配置完成！');
     }
     
-    // 素材加载完成后的回调
-    loadComplete() {
-        console.log('📦 所有素材加载完成！');
-        console.log('🔍 检查纹理是否存在...');
-        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
-        unitTypes.forEach(name => {
-            const key = `unit-${name.toLowerCase()}`;
-            if (this.textures.exists(key)) {
-                const texture = this.textures.get(key);
-                console.log(`  ✅ ${key}: ${texture.source[0].width}x${texture.source[0].height}`);
-            } else {
-                console.log(`  ❌ ${key}: 不存在`);
-            }
-        });
-    }
-    
     create() {
         console.log('🎨 MainScene.create() - 像素艺术版');
-        console.log('🔍 调试信息 - window.MainSceneCreated:', window.MainSceneCreated);
         
-        // 防止重复创建（使用全局标志而不是实例标志）
-        if (window.MainSceneCreated) {
-            console.log('⚠️ MainScene已经在全局创建过了，跳过重复创建');
+        // 防止重复创建
+        if (this.created) {
+            console.log('⚠️ 场景已经创建过了，跳过');
             return;
         }
-        window.MainSceneCreated = true;
-        console.log('✅ 设置window.MainSceneCreated = true');
+        this.created = true;
         
         const width = this.scale.width;
         const height = this.scale.height;
@@ -133,19 +114,6 @@ class MainScene extends Phaser.Scene {
         this.setupControls();
         
         this.cameras.main.centerOn(this.mapWidth / 2, this.mapHeight / 2);
-        
-        // 检查纹理
-        console.log('🔍 create() 中检查纹理...');
-        const unitTypes = ['Warrior', 'Archer', 'Lancer', 'Monk', 'Pawn'];
-        unitTypes.forEach(name => {
-            const key = `unit-${name.toLowerCase()}`;
-            if (this.textures.exists(key)) {
-                const texture = this.textures.get(key);
-                console.log(`  ✅ ${key}: ${texture.source[0].width}x${texture.source[0].height}`);
-            } else {
-                console.log(`  ❌ ${key}: 不存在`);
-            }
-        });
         
         console.log('✅ MainScene.create() 完成 - 像素世界已创建！');
     }

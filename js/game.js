@@ -42,13 +42,7 @@ window.onload = function() {
             }
         };
         
-        // 清除旧的全局标志，确保能正常启动
-        console.log('🧹 重置全局标志...');
-        window.MainSceneCreated = false;
-        window.NPCManagerCreated = false;
-        window.ExistingNPCs = null;
-        console.log('✅ window.MainSceneCreated =', window.MainSceneCreated);
-        console.log('✅ window.NPCManagerCreated =', window.NPCManagerCreated);
+
         
         // 启动游戏
         const game = new Phaser.Game(config);
