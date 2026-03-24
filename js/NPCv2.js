@@ -179,21 +179,40 @@ class NPCManager {
             { x: 800, y: 800, radius: 50 }    // campfire center
         ];
         
+        console.log('🔍 调试信息 - window.NPCManagerCreated:', window.NPCManagerCreated);
+        console.log('🔍 调试信息 - window.ExistingNPCs:', window.ExistingNPCs ? window.ExistingNPCs.length : 0);
+        
         // 防止重复创建NPC（使用全局标志）
-        if (window.NPCManagerCreated) {
+        if (window.NPCManagerCreated && window.ExistingNPCs) {
             console.log('⚠️ NPCManager已经创建过了，跳过重复创建NPC');
-            this.npcs = window.ExistingNPCs || [];
+            this.npcs = window.ExistingNPCs;
+            console.log('ℹ️ 复用已有的', this.npcs.length, '个NPC');
             return;
         }
+        
+        // 先清除场景中已有的精灵（以防万一）
+        if (window.ExistingNPCs && window.ExistingNPCs.length > 0) {
+            console.log('🧹 清理之前可能残留的NPC精灵...');
+            window.ExistingNPCs.forEach(npc => {
+                if (npc.sprite) npc.sprite.destroy();
+                if (npc.nameText) npc.nameText.destroy();
+            });
+        }
+        
         window.NPCManagerCreated = true;
+        console.log('✅ 设置window.NPCManagerCreated = true');
         
         this.createNPCs();
         
         // 保存NPC引用供后续使用
         window.ExistingNPCs = this.npcs;
+        console.log('💾 保存window.ExistingNPCs, NPC数量:', this.npcs.length);
     }
     
     createNPCs() {
+        console.log('🔨 开始创建NPC...');
+        
+        // 确保只创建10个NPC
         const npcData = [
             { name: '战士阿龙', unitType: 'Warrior' },
             { name: '射手小美', unitType: 'Archer' },
@@ -207,7 +226,15 @@ class NPCManager {
             { name: '村民大壮', unitType: 'Pawn' }
         ];
         
+        console.log('📋 NPC数据数量:', npcData.length);
+        
+        // 先清空已有的NPC数组
+        this.npcs = [];
+        
+        console.log('🔨 开始循环创建每个NPC...');
         npcData.forEach((data, index) => {
+            console.log(`  创建NPC ${index + 1}/${npcData.length}: ${data.name} (${data.unitType})`);
+            
             // 在中心区域随机位置生成，确保不在建筑内
             let x, y;
             let attempts = 0;
@@ -222,7 +249,19 @@ class NPCManager {
             this.npcs.push(npc);
         });
         
-        console.log(`✅ 创建了 ${this.npcs.length} 个NPC（使用Tiny Swords素材）`);
+        console.log(`✅ 创建完成！总共 ${this.npcs.length} 个NPC（使用Tiny Swords素材）`);
+        
+        // 额外验证：确保不超过10个
+        if (this.npcs.length > 10) {
+            console.error('❌ 错误！创建了超过10个NPC！');
+            // 移除多余的NPC
+            while (this.npcs.length > 10) {
+                const extraNpc = this.npcs.pop();
+                if (extraNpc.sprite) extraNpc.sprite.destroy();
+                if (extraNpc.nameText) extraNpc.nameText.destroy();
+                console.log('🧹 移除了多余的NPC:', extraNpc.name);
+            }
+        }
     }
     
     checkInitialPosition(x, y) {

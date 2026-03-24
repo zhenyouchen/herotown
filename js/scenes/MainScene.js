@@ -57,6 +57,7 @@ class MainScene extends Phaser.Scene {
     
     create() {
         console.log('🎨 MainScene.create() - 像素艺术版');
+        console.log('🔍 调试信息 - window.MainSceneCreated:', window.MainSceneCreated);
         
         // 防止重复创建（使用全局标志而不是实例标志）
         if (window.MainSceneCreated) {
@@ -64,6 +65,7 @@ class MainScene extends Phaser.Scene {
             return;
         }
         window.MainSceneCreated = true;
+        console.log('✅ 设置window.MainSceneCreated = true');
         
         const width = this.scale.width;
         const height = this.scale.height;
