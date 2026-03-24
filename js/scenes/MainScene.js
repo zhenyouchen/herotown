@@ -58,12 +58,12 @@ class MainScene extends Phaser.Scene {
     create() {
         console.log('🎨 MainScene.create() - 像素艺术版');
         
-        // 防止重复创建
-        if (this.created) {
-            console.log('⚠️ 场景已经创建过了，跳过');
+        // 防止重复创建（使用全局标志而不是实例标志）
+        if (window.MainSceneCreated) {
+            console.log('⚠️ MainScene已经在全局创建过了，跳过重复创建');
             return;
         }
-        this.created = true;
+        window.MainSceneCreated = true;
         
         const width = this.scale.width;
         const height = this.scale.height;

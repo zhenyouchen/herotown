@@ -42,6 +42,11 @@ window.onload = function() {
             }
         };
         
+        // 清除旧的全局标志，确保能正常启动
+        window.MainSceneCreated = false;
+        window.NPCManagerCreated = false;
+        window.ExistingNPCs = [];
+        
         // 启动游戏
         const game = new Phaser.Game(config);
         

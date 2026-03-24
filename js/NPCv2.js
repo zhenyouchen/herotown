@@ -178,7 +178,19 @@ class NPCManager {
             { x: 950, y: 900, radius: 60 },   // armor
             { x: 800, y: 800, radius: 50 }    // campfire center
         ];
+        
+        // 防止重复创建NPC（使用全局标志）
+        if (window.NPCManagerCreated) {
+            console.log('⚠️ NPCManager已经创建过了，跳过重复创建NPC');
+            this.npcs = window.ExistingNPCs || [];
+            return;
+        }
+        window.NPCManagerCreated = true;
+        
         this.createNPCs();
+        
+        // 保存NPC引用供后续使用
+        window.ExistingNPCs = this.npcs;
     }
     
     createNPCs() {
