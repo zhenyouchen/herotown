@@ -14,10 +14,9 @@ class NPC {
         this.direction = 'down';
         this.sprite = null;
         this.nameText = null;
-        this.buildings = buildings; // 建筑位置，用于碰撞检测
-        this.radius = 20; // NPC碰撞半径
+        this.buildings = buildings;
+        this.radius = 20;
         
-        // 根据unitType设置对话
         this.dialogues = this.getDialoguesByUnitType(unitType);
     }
     
@@ -75,27 +74,22 @@ class NPC {
             this.pickNewTarget();
             this.idleTime = this.maxIdleTime;
         } else {
-            // 计算移动
             const moveX = (dx / distance) * this.speed;
             const moveY = (dy / distance) * this.speed;
             
-            // 预测新位置
             const newX = this.x + moveX;
             const newY = this.y + moveY;
             
-            // 检查是否与建筑碰撞
             if (!this.checkBuildingCollision(newX, newY)) {
                 this.x = newX;
                 this.y = newY;
                 
-                // 更新方向
                 if (Math.abs(moveX) > Math.abs(moveY)) {
                     this.direction = moveX > 0 ? 'right' : 'left';
                 } else {
                     this.direction = moveY > 0 ? 'down' : 'up';
                 }
                 
-                // 更新精灵位置
                 if (this.sprite) {
                     this.sprite.x = this.x;
                     this.sprite.y = this.y;
@@ -105,25 +99,21 @@ class NPC {
                     this.nameText.y = this.y - 25;
                 }
             } else {
-                // 碰撞了，重新选择目标
                 this.pickNewTarget();
             }
         }
     }
     
     checkBuildingCollision(x, y) {
-        // 检查与每个建筑的碰撞
         for (let building of this.buildings) {
             const dx = x - building.x;
             const dy = y - building.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            // 建筑半径 + NPC半径
             if (distance < (building.radius + this.radius)) {
-                return true; // 碰撞
+                return true;
             }
         }
-        return false; // 没有碰撞
+        return false;
     }
     
     pickNewTarget() {
@@ -134,7 +124,6 @@ class NPC {
         let attempts = 0;
         let newX, newY;
         
-        // 尝试找到不碰撞的位置
         do {
             newX = centerX + (Math.random() - 0.5) * range * 2;
             newY = centerY + (Math.random() - 0.5) * range * 2;
@@ -146,12 +135,20 @@ class NPC {
     }
     
     createSprite(scene) {
-        // 使用Tiny Swords素材 - 恢复能工作的版本
         const textureKey = `unit-${this.unitType.toLowerCase()}`;
         
-        // 创建精灵
-        this.sprite = scene.add.image(this.x, this.y, textureKey);
-        this.sprite.setScale(0.6); // 缩小一点
+        // 检查纹理是否存在，如果不存在则使用emoji作为后备
+        if (!scene.textures.exists(textureKey)) {
+            console.warn(`纹理 ${textureKey} 不存在，使用emoji后备`);
+            const emojis = { Warrior: '⚔️', Archer: '🏹', Lancer: '🗡️', Monk: '🧘', Pawn: '👤' };
+            this.sprite = scene.add.text(this.x, this.y, emojis[this.unitType] || '👤', {
+                fontSize: '32px'
+            }).setOrigin(0.5);
+        } else {
+            // 使用精灵表的第一帧创建精灵
+            this.sprite = scene.add.sprite(this.x, this.y, textureKey, 0); // 使用第0帧
+            this.sprite.setScale(0.6);
+        }
         
         this.nameText = scene.add.text(this.x, this.y - 25, this.name, {
             fontSize: '10px',
@@ -168,17 +165,15 @@ class NPCManager {
     constructor(scene, buildings) {
         this.scene = scene;
         this.npcs = [];
-        // 建筑碰撞数据
         this.buildingColliders = buildings || [
-            { x: 650, y: 700, radius: 60 },   // hospital
-            { x: 800, y: 700, radius: 60 },   // school
-            { x: 950, y: 700, radius: 60 },   // gym
-            { x: 650, y: 900, radius: 60 },   // fitness
-            { x: 800, y: 900, radius: 60 },   // weapon
-            { x: 950, y: 900, radius: 60 },   // armor
-            { x: 800, y: 800, radius: 50 }    // campfire center
+            { x: 650, y: 700, radius: 60 },
+            { x: 800, y: 700, radius: 60 },
+            { x: 950, y: 700, radius: 60 },
+            { x: 650, y: 900, radius: 60 },
+            { x: 800, y: 900, radius: 60 },
+            { x: 950, y: 900, radius: 60 },
+            { x: 800, y: 800, radius: 50 }
         ];
-        
         this.createNPCs();
     }
     
@@ -197,7 +192,6 @@ class NPCManager {
         ];
         
         npcData.forEach((data, index) => {
-            // 在中心区域随机位置生成，确保不在建筑内
             let x, y;
             let attempts = 0;
             do {
@@ -215,13 +209,12 @@ class NPCManager {
     }
     
     checkInitialPosition(x, y) {
-        // 检查初始位置是否在建筑内
         for (let building of this.buildingColliders) {
             const dx = x - building.x;
             const dy = y - building.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < building.radius + 30) {
-                return true; // 在建筑内
+                return true;
             }
         }
         return false;
